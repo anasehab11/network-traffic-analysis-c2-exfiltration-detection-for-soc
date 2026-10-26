@@ -31,17 +31,29 @@ Regenerate samples: `python sample_data/generate_samples.py`  -  Run tests: `pip
 
 network-threat-detection/
   app.py                  Streamlit dashboard (15 pages)
+  
   requirements.txt  requirements-dev.txt  pytest.ini  .gitignore  README.md
+  
   config/                 settings.py (thresholds + defaults), watchlist.txt (ships empty)
+  
   core/                   detection engine (no UI code)
-    pcap_parser.py  flow_analysis.py  protocol_analysis.py  dns_analysis.py  http_tls_analysis.py
-    scan_detection.py  beacon_detection.py  exfiltration_detection.py  ioc_extraction.py
-    mitre_mapping.py  risk_scoring.py  wireshark_filters.py  report.py  analyzer.py  models.py  utils.py
+  
+  pcap_parser.py  flow_analysis.py  protocol_analysis.py  dns_analysis.py  http_tls_analysis.py
+  
+  scan_detection.py  beacon_detection.py  exfiltration_detection.py  ioc_extraction.py
+  
+  mitre_mapping.py  risk_scoring.py  wireshark_filters.py  report.py  analyzer.py  models.py  utils.py
+  
   integrations/           zeek_integration.py  suricata_integration.py  ollama_integration.py   (all optional)
+  
   database/               db.py  (SQLite history; investigations.db is created at first run)
+  
   reports/                (exports you save manually)
+  
   sample_data/            generate_samples.py + simulated PCAPs
+  
   tests/                  pytest suite
+  
   docs/                   installation.md user_guide.md detection_rules.md wireshark_filters.md troubleshooting.md
                           architecture.md tutorial.md ai_prompt_library.md annotated_pcap_analysis.md network_protocol_map.md
                           example_output/ (sample SOC report as .md/.json/.pdf)
