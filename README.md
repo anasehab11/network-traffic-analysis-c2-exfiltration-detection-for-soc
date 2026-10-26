@@ -4,8 +4,8 @@ A local, offline Blue Team tool that analyses PCAP/PCAPNG files and helps a SOC 
 suspicious HTTP/TLS metadata and potential data exfiltration**, map findings to MITRE ATT&CK, extract IOCs and write an incident report.
 Built in Python with Streamlit, Scapy, Pandas, Plotly and SQLite. Optional: Zeek, Suricata and a local LLM through Ollama. No paid APIs, no cloud services.
 
-> **Important:** every detection is a *heuristic indicator*, not proof of compromise. Alerts always list evidence, thresholds, confidence and possible false positives.
-> All bundled sample traffic is **synthetic and simulated** (`*_sim.pcap`); no real malware or victims are involved.
+ **Important:** every detection is a *heuristic indicator*, not proof of compromise. Alerts always list evidence, thresholds, confidence and possible false positives.
+ All bundled sample traffic is **synthetic and simulated** (`*_sim.pcap`); no real malware or victims are involved.
 
 ## Features by week
 | Week | Implemented |
@@ -16,19 +16,19 @@ Built in Python with Streamlit, Scapy, Pandas, Plotly and SQLite. Optional: Zeek
 | 4 AI & reporting | local Ollama assistant with fallback, prompt library, 12-section SOC report (Markdown/JSON/PDF), analyst triage notes, SQLite history |
 
 ## Quick start (Windows 10/11, PowerShell)
-```powershell
+powershell
 py -3.11 -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 streamlit run app.py
-```
+
 Open **Upload PCAP**, pick `demo_combined_sim.pcap` from the sample list, click **Analyze**. Stop with `Ctrl+C`.
 Full setup (VS Code, optional Wireshark/Ollama/Suricata/Zeek, troubleshooting) is in [`docs/installation.md`](docs/installation.md).
 
 Regenerate samples: `python sample_data/generate_samples.py`  -  Run tests: `pip install -r requirements-dev.txt` then `python -m pytest`
 
 ## Project structure
-```
+
 network-threat-detection/
   app.py                  Streamlit dashboard (15 pages)
   requirements.txt  requirements-dev.txt  pytest.ini  .gitignore  README.md
@@ -67,3 +67,6 @@ Module responsibilities and the data flow are described in [`docs/architecture.m
 * The AI assistant is optional, loopback-only, receives structured summaries (not the PCAP), treats packet text as untrusted data, and its output is labelled as an unvalidated draft.
 * Encrypted traffic exposes only metadata; missing/truncated packets, NAT and capture position limit conclusions. SMB/SSH/RDP rules show connection patterns, not authentication success or file contents.
 * Thresholds are configurable (defaults documented) and need tuning to your environment.
+
+ network-traffic-analysis-c2-exfiltration-detection-for-soc
+
