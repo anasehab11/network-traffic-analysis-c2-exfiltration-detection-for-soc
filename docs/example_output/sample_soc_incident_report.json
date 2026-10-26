@@ -1,0 +1,1208 @@
+{
+  "generated_utc": "2026-10-17 11:03:29 UTC",
+  "executive_summary": "The capture 'demo_combined_sim.pcap' (5,098 packets, 2117.88 s, 84 hosts) was analysed offline. The detection engine raised 15 alert(s): 4 High, 6 Medium, 1 Low, 4 Informational. The highest-priority indicators are: Periodic connections to 203.0.113.50:8443 (beacon-like timing) (192.168.1.50 -> 203.0.113.50); Port scan-like activity: 192.168.1.66 -> 192.168.1.20 (192.168.1.66 -> 192.168.1.20); Host sweep on TCP/445 from 192.168.1.66 (192.168.1.66 -> multiple). Overall heuristic risk is Critical (100/100). All findings are indicators that require analyst validation; none is confirmed malicious activity on its own.",
+  "investigation_scope": "Offline analysis of a single packet capture using the built-in heuristic engine. No live scanning, no external lookups, no payload extraction. Thresholds: see 'thresholds'.",
+  "pcap_metadata": {
+    "filename": "demo_combined_sim.pcap",
+    "format": "pcap",
+    "size_bytes": 3286339,
+    "sha256": "2a5915463b1acef4b6aff51427a682b02b30442ab6af20ee139d9458c142bc89",
+    "packets": 5098,
+    "non_ip_packets": 0,
+    "truncated": false,
+    "first_packet_utc": "2025-10-09 08:53:21 UTC",
+    "last_packet_utc": "2025-10-09 09:28:38 UTC",
+    "duration_s": 2117.88
+  },
+  "network_overview": {
+    "packets": 5098,
+    "total_bytes": 3204747,
+    "duration_s": 2117.88,
+    "avg_packets_per_s": 2.41,
+    "avg_packet_size": 628.6,
+    "unique_hosts": 84,
+    "internal_hosts": 75,
+    "external_hosts": 9,
+    "flows": 730,
+    "tcp_packets": 4292,
+    "udp_packets": 766,
+    "icmp_packets": 40,
+    "top_protocol": "HTTP-Alt",
+    "top_talker": "192.168.1.77 (2.91 MB sent)",
+    "top_dst_port": "UDP/53"
+  },
+  "key_findings": [
+    "[High/High] Periodic connections to 203.0.113.50:8443 (beacon-like timing): 36 TCP connections from 192.168.1.50 to 203.0.113.50:8443 between 2025-10-09 08:53:41 UTC and 2025-10-09 09:28:38 UTC.",
+    "[High/High] Port scan-like activity: 192.168.1.66 -> 192.168.1.20: 208 distinct destination ports on 192.168.1.20; 214 SYN probe flows in 16.4s (~13 probes/s).",
+    "[High/High] Host sweep on TCP/445 from 192.168.1.66: 42 distinct hosts probed on port 445; 42 SYN probe flows in 7.6s (~6 probes/s).",
+    "[High/High] Possible DNS tunneling to tunnel-sim.example: 300 queries from 192.168.1.88 for names under tunnel-sim.example (1760001200-1760001317 epoch).",
+    "[Medium/High] Many random-looking domain names (DGA-like pattern): 192.168.1.88 queried 38 distinct domains whose second-level labels look random (entropy >= 3.0, vowel ratio <= 0.3).",
+    "[Medium/Medium] SMB connections to many hosts from one source: 192.168.1.66 contacted 42 distinct hosts on TCP/445 (SMB).",
+    "[Medium/Medium] HTTP user-agent associated with scanning/attack tools: User-Agent contains: nikto (4 request(s)).",
+    "[Medium/Medium] Large HTTP POST upload to files-sim.example: 1 cleartext HTTP request(s) declared Content-Length up to 2.80 MB (host: files-sim.example, path: /upload).",
+    "[Medium/Low] Suspicious HTTP request path: Request to 192.168.1.20: GET /index.php?cmd=id",
+    "[Medium/Low] Large outbound transfer to 198.51.100.25:8080: 192.168.1.77 sent 2.91 MB (2003 packets) to 198.51.100.25:8080/TCP over 16.1s (~177 KB/s) across 1 flow(s); 54.15 KB came back."
+  ],
+  "prioritized_alerts": [
+    {
+      "alert_id": "BEAC-2A1F9380",
+      "title": "Periodic connections to 203.0.113.50:8443 (beacon-like timing)",
+      "category": "Beaconing",
+      "rule": "BEACON-PERIODIC",
+      "severity": "High",
+      "confidence": "High",
+      "src_ip": "192.168.1.50",
+      "dst_ip": "203.0.113.50",
+      "dst_port": 8443,
+      "protocol": "TCP",
+      "start_ts": 1760000021.368103,
+      "end_ts": 1760002118.700051,
+      "evidence": [
+        "36 TCP connections from 192.168.1.50 to 203.0.113.50:8443 between 2025-10-09 08:53:41 UTC and 2025-10-09 09:28:38 UTC.",
+        "Interval mean 59.92s, median 59.96s, std 1.30s, CV 0.022; 100% of intervals within +/-20% of the median.",
+        "Mean bytes per connection: 677 B out / 575 B in (size CV out 0.00, in 0.00).",
+        "36 of 36 connections received a reply. First start times: 08:53:41, 08:54:40, 08:55:39, 08:56:38, 08:57:38.",
+        "Scoring signals (5): external destination=True, non-standard port=True, consistent sizes=True, >=20 connections=True, very regular (CV<0.1)=True."
+      ],
+      "threshold": ">= 8 connections; CV <= 0.25 or >= 80% of intervals within +/-20%",
+      "investigation_steps": [
+        "Identify the process on the source host that opens these connections (EDR, netstat/Sysmon event 3).",
+        "Check the destination IP/domain reputation and whether other hosts contact it.",
+        "Inspect jitter, payload sizes and any HTTP/TLS metadata (SNI, JA3) for the group.",
+        "If unexplained, isolate the host and collect memory/disk artefacts before remediation."
+      ],
+      "false_positives": [
+        "Software update checks, telemetry, heartbeat/keep-alive, monitoring agents, mail/chat polling, NTP.",
+        "Browser tabs or SaaS clients refreshing on a timer."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1071.001",
+          "name": "Application Layer Protocol: Web Protocols",
+          "tactic": "Command and Control",
+          "rationale": "Regular periodic connections are consistent with C2 check-ins; payload not inspected, so protocol use is unconfirmed."
+        },
+        {
+          "id": "T1571",
+          "name": "Non-Standard Port",
+          "tactic": "Command and Control",
+          "rationale": "Periodic traffic on a port outside the common-service list."
+        }
+      ],
+      "risk_score": 82.5,
+      "wireshark_filter": "ip.addr == 192.168.1.50 && ip.addr == 203.0.113.50 && tcp.port == 8443",
+      "status": "New"
+    },
+    {
+      "alert_id": "SCAN-645FE0B1",
+      "title": "Port scan-like activity: 192.168.1.66 -> 192.168.1.20",
+      "category": "Scan",
+      "rule": "SCAN-VERTICAL",
+      "severity": "High",
+      "confidence": "High",
+      "src_ip": "192.168.1.66",
+      "dst_ip": "192.168.1.20",
+      "dst_port": null,
+      "protocol": "TCP",
+      "start_ts": 1760000600.0,
+      "end_ts": 1760000616.439986,
+      "evidence": [
+        "208 distinct destination ports on 192.168.1.20; 214 SYN probe flows in 16.4s (~13 probes/s).",
+        "95% of probes got no answer or a reset (threshold 60%).",
+        "Ports probed: 1-200, 445, 1433, 3306, 3389, 5432, 5900, 8080, 8443; 96% of probed port numbers are contiguous (dense range coverage).",
+        "Open ports observed (SYN-ACK): 22, 80, 445, 3389.",
+        "98% of SYN probes used TCP window 1024 (consistent with, not proof of, Nmap defaults).",
+        "Evidence is insufficient to confirm Nmap specifically: SYN probes with a small fixed window are only consistent with Nmap defaults; OS fingerprinting/NSE traffic would need payload or option-level review."
+      ],
+      "threshold": "flows >= 20 and failed ratio >= 60% and (ports >= 20 on one host or hosts >= 15 on one port)",
+      "investigation_steps": [
+        "Determine whether 192.168.1.66 is an authorised scanner or asset-inventory host.",
+        "Review firewall/IDS logs for the same source in the surrounding hours.",
+        "If unauthorised, isolate the source and investigate how it was compromised (internal) or block it (external).",
+        "Check the targets for newly opened ports/services shown in the evidence."
+      ],
+      "false_positives": [
+        "Authorised vulnerability scanner or asset discovery.",
+        "Internet background scanning (if the source is external)."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1046",
+          "name": "Network Service Discovery",
+          "tactic": "Discovery",
+          "rationale": "Many ports/services probed on a host from an internal source."
+        }
+      ],
+      "risk_score": 82.5,
+      "wireshark_filter": "ip.addr == 192.168.1.66 && ip.addr == 192.168.1.20 | ip.src == 192.168.1.66 && tcp.flags.syn == 1 && tcp.flags.ack == 0 | ip.dst == 192.168.1.66 && tcp.flags.reset == 1",
+      "status": "New"
+    },
+    {
+      "alert_id": "SCAN-67539DBB",
+      "title": "Host sweep on TCP/445 from 192.168.1.66",
+      "category": "Scan",
+      "rule": "SCAN-HORIZONTAL",
+      "severity": "High",
+      "confidence": "High",
+      "src_ip": "192.168.1.66",
+      "dst_ip": "multiple",
+      "dst_port": 445,
+      "protocol": "TCP",
+      "start_ts": 1760000600.235997,
+      "end_ts": 1760000607.839987,
+      "evidence": [
+        "42 distinct hosts probed on port 445; 42 SYN probe flows in 7.6s (~6 probes/s).",
+        "98% of probes got no answer or a reset (threshold 60%).",
+        "Ports probed: 445; 0% of probed port numbers are contiguous (dense range coverage).",
+        "Open ports observed (SYN-ACK): 445.",
+        "100% of SYN probes used TCP window 1024 (consistent with, not proof of, Nmap defaults).",
+        "Evidence is insufficient to confirm Nmap specifically: SYN probes with a small fixed window are only consistent with Nmap defaults; OS fingerprinting/NSE traffic would need payload or option-level review."
+      ],
+      "threshold": "flows >= 20 and failed ratio >= 60% and (ports >= 20 on one host or hosts >= 15 on one port)",
+      "investigation_steps": [
+        "Determine whether 192.168.1.66 is an authorised scanner or asset-inventory host.",
+        "Review firewall/IDS logs for the same source in the surrounding hours.",
+        "If unauthorised, isolate the source and investigate how it was compromised (internal) or block it (external).",
+        "Check the targets for newly opened ports/services shown in the evidence."
+      ],
+      "false_positives": [
+        "Authorised vulnerability scanner or asset discovery.",
+        "Internet background scanning (if the source is external)."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1046",
+          "name": "Network Service Discovery",
+          "tactic": "Discovery",
+          "rationale": "One internal source probed the same port on many hosts."
+        }
+      ],
+      "risk_score": 82.5,
+      "wireshark_filter": "ip.src == 192.168.1.66 | ip.src == 192.168.1.66 && tcp.flags.syn == 1 && tcp.flags.ack == 0 | ip.dst == 192.168.1.66 && tcp.flags.reset == 1",
+      "status": "New"
+    },
+    {
+      "alert_id": "DNS-E5C04AD3",
+      "title": "Possible DNS tunneling to tunnel-sim.example",
+      "category": "DNS",
+      "rule": "DNS-TUNNEL",
+      "severity": "High",
+      "confidence": "High",
+      "src_ip": "192.168.1.88",
+      "dst_ip": "resolver",
+      "dst_port": 53,
+      "protocol": "UDP",
+      "start_ts": 1760001200.0,
+      "end_ts": 1760001316.810166,
+      "evidence": [
+        "300 queries from 192.168.1.88 for names under tunnel-sim.example (1760001200-1760001317 epoch).",
+        "300 unique subdomains; average subdomain length 45.0; 300 high-entropy names; 300 unusually long names; 100% TXT/NULL/ANY queries; peak 152 queries/min.",
+        "98 of 300 responses were NXDOMAIN.",
+        "Sample names: qwb5pdkhx6pygpan2rlykei4iiaannkksumnlmytbx2k.t.tunnel-sim.example; avetwt6ul66ldqbwzb2xya4clmhp5wwq5gxsc3fnvxjv.t.tunnel-sim.example; utlfjt6kdfzcpwq52jdc7vnii2gk3xjd2sj5k57u6rs6.t.tunnel-sim.example",
+        "Indicators met: many_unique_subdomains, high_entropy, long_names, txt_null_heavy, high_frequency.",
+        "These are statistical indicators; the data inside the queries is not decoded."
+      ],
+      "threshold": "tunnel indicators >= 3 of 5 (unique subdomains >= 30, entropy >= 3.5, name length >= 52, TXT/NULL >= 50%, rate >= 100/min)",
+      "investigation_steps": [
+        "Pivot in Wireshark with the suggested DNS filter and look at query names, record types and response sizes.",
+        "Check whether the client runs software that legitimately generates many DNS names (CDN, AV cloud lookups, DNS-based blocklists).",
+        "Review the domain's registration age/reputation using your approved internal tooling; do not browse to it.",
+        "If suspicious: isolate the host, capture endpoint process-to-network mapping (EDR) and block the domain at the resolver."
+      ],
+      "false_positives": [
+        "CDN, antivirus or telemetry services that encode identifiers in hostnames.",
+        "DNS-based blocklists / reputation lookups (e.g. mail filters).",
+        "Wildcard DNS test tools."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1071.004",
+          "name": "Application Layer Protocol: DNS",
+          "tactic": "Command and Control",
+          "rationale": "Many high-entropy, long DNS names under one domain."
+        },
+        {
+          "id": "T1572",
+          "name": "Protocol Tunneling",
+          "tactic": "Command and Control",
+          "rationale": "Pattern consistent with data encoded into DNS names."
+        }
+      ],
+      "risk_score": 82.5,
+      "wireshark_filter": "ip.addr == 192.168.1.88 && ip.addr == resolver && udp.port == 53 | dns.qry.name contains \"tunnel-sim.example\"",
+      "status": "New"
+    },
+    {
+      "alert_id": "DNS-6F909C22",
+      "title": "Many random-looking domain names (DGA-like pattern)",
+      "category": "DNS",
+      "rule": "DNS-DGA",
+      "severity": "Medium",
+      "confidence": "High",
+      "src_ip": "192.168.1.88",
+      "dst_ip": "resolver",
+      "dst_port": 53,
+      "protocol": "UDP",
+      "start_ts": 1760001317.199043,
+      "end_ts": 1760001376.181728,
+      "evidence": [
+        "192.168.1.88 queried 38 distinct domains whose second-level labels look random (entropy >= 3.0, vowel ratio <= 0.3).",
+        "38 of 38 matching responses were NXDOMAIN.",
+        "Samples: abfjigxfdnhtv.example; dmefnmggtxdgo.example; wnzdfusqpwwk.example; lkcihjcvmnbvdvp.example; rrigiuktssld.example; svqtxzdvadsrelsr.example"
+      ],
+      "threshold": ">= 10 random-looking domains from one source",
+      "investigation_steps": [
+        "Check whether the host runs software known to use random names (browser captive-portal checks, Chromium DNS probes).",
+        "Look for the process responsible via EDR; most DGAs are produced by malware or by coverage/probing tools.",
+        "Block at the resolver and review other hosts querying the same names."
+      ],
+      "false_positives": [
+        "Browser/OS connectivity probes generate a few random names (Chromium), usually fewer than the threshold.",
+        "Security scanners or sandbox detonation."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1568.002",
+          "name": "Dynamic Resolution: Domain Generation Algorithms",
+          "tactic": "Command and Control",
+          "rationale": "Many random-looking domain names queried by one source."
+        }
+      ],
+      "risk_score": 55.0,
+      "wireshark_filter": "ip.addr == 192.168.1.88 && ip.addr == resolver && udp.port == 53",
+      "status": "New"
+    },
+    {
+      "alert_id": "REMO-13AA9CE3",
+      "title": "SMB connections to many hosts from one source",
+      "category": "Remote Services",
+      "rule": "REMOTE-SMB-SWEEP",
+      "severity": "Medium",
+      "confidence": "Medium",
+      "src_ip": "192.168.1.66",
+      "dst_ip": "multiple",
+      "dst_port": 445,
+      "protocol": "TCP",
+      "start_ts": 1760000600.235997,
+      "end_ts": 1760000607.839987,
+      "evidence": [
+        "192.168.1.66 contacted 42 distinct hosts on TCP/445 (SMB).",
+        "1 host(s) completed the TCP handshake; this does NOT show a successful login.",
+        "Total flows: 42."
+      ],
+      "threshold": "distinct destination hosts >= 5 on one SMB port",
+      "investigation_steps": [
+        "Identify the source host and its owner; check whether remote administration from it is expected.",
+        "Review authentication logs (Windows Security 4624/4625, SSH auth.log) on the destination(s).",
+        "In Wireshark filter on the source and port to review timing and session lengths."
+      ],
+      "false_positives": [
+        "Admin/inventory/backup tools legitimately contact many hosts.",
+        "Vulnerability scanners."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1021.002",
+          "name": "Remote Services: SMB/Windows Admin Shares",
+          "tactic": "Lateral Movement",
+          "rationale": "One source connecting to SMB on many hosts."
+        }
+      ],
+      "risk_score": 50.0,
+      "wireshark_filter": "ip.src == 192.168.1.66",
+      "status": "New"
+    },
+    {
+      "alert_id": "HTTP-A6F73B4E",
+      "title": "HTTP user-agent associated with scanning/attack tools",
+      "category": "HTTP",
+      "rule": "HTTP-SCANNER-UA",
+      "severity": "Medium",
+      "confidence": "Medium",
+      "src_ip": "192.168.1.66",
+      "dst_ip": "192.168.1.20",
+      "dst_port": 80,
+      "protocol": "TCP",
+      "start_ts": 1760000614.839986,
+      "end_ts": 1760000616.339986,
+      "evidence": [
+        "User-Agent contains: nikto (4 request(s)).",
+        "Example: Nikto/2.1.6 (SIMULATED)",
+        "User-agents are trivially spoofed; absence/presence is only an indicator."
+      ],
+      "threshold": "user-agent matches scanner keyword list",
+      "investigation_steps": [
+        "Open the request/handshake in Wireshark using the suggested filter.",
+        "Confirm the client application and destination are expected.",
+        "Review proxy/web-server logs for response codes; the capture alone may not show success."
+      ],
+      "false_positives": [
+        "Authorised vulnerability scans.",
+        "Another tool reusing the string."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1595.002",
+          "name": "Active Scanning: Vulnerability Scanning",
+          "tactic": "Reconnaissance",
+          "rationale": "User-agent of a known scanning tool."
+        }
+      ],
+      "risk_score": 50.0,
+      "wireshark_filter": "ip.addr == 192.168.1.66 && ip.addr == 192.168.1.20 && tcp.port == 80 | ip.src == 192.168.1.66 && http.request",
+      "status": "New"
+    },
+    {
+      "alert_id": "EXFI-FA168C3A",
+      "title": "Large HTTP POST upload to files-sim.example",
+      "category": "Exfiltration",
+      "rule": "EXFIL-HTTP-POST",
+      "severity": "Medium",
+      "confidence": "Medium",
+      "src_ip": "192.168.1.77",
+      "dst_ip": "198.51.100.25",
+      "dst_port": 8080,
+      "protocol": "TCP",
+      "start_ts": 1760000900.15,
+      "end_ts": 1760000900.15,
+      "evidence": [
+        "1 cleartext HTTP request(s) declared Content-Length up to 2.80 MB (host: files-sim.example, path: /upload).",
+        "Content-Length is what the client declared; the body itself is not stored or analysed."
+      ],
+      "threshold": "POST/PUT Content-Length >= 1000000",
+      "investigation_steps": [
+        "Identify the process/user on the internal host responsible for the transfer (EDR, proxy logs).",
+        "Check whether the destination is an approved backup/cloud/file-sharing service.",
+        "Review what data was accessible to that host around that time (file-server and DLP logs).",
+        "If unapproved: block the destination, preserve evidence and start incident handling."
+      ],
+      "false_positives": [
+        "Backups, cloud sync (OneDrive/Dropbox), software uploads, video conferencing, crash-dump uploads.",
+        "Large legitimate file shares or mail attachments.",
+        "Legitimate web-form/file uploads."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1048.003",
+          "name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+          "tactic": "Exfiltration",
+          "rationale": "Large cleartext HTTP upload."
+        }
+      ],
+      "risk_score": 50.0,
+      "wireshark_filter": "ip.addr == 192.168.1.77 && ip.addr == 198.51.100.25 && tcp.port == 8080",
+      "status": "New"
+    },
+    {
+      "alert_id": "HTTP-01041F97",
+      "title": "Suspicious HTTP request path",
+      "category": "HTTP",
+      "rule": "HTTP-PATH",
+      "severity": "Medium",
+      "confidence": "Low",
+      "src_ip": "192.168.1.66",
+      "dst_ip": "192.168.1.20",
+      "dst_port": 80,
+      "protocol": "TCP",
+      "start_ts": 1760000616.339986,
+      "end_ts": 1760000616.339986,
+      "evidence": [
+        "Request to 192.168.1.20: GET /index.php?cmd=id",
+        "Matched: command-like parameter.",
+        "The response code/body was not evaluated here, so success cannot be confirmed."
+      ],
+      "threshold": "path matches suspicious-pattern list",
+      "investigation_steps": [
+        "Open the request/handshake in Wireshark using the suggested filter.",
+        "Confirm the client application and destination are expected.",
+        "Review proxy/web-server logs for response codes; the capture alone may not show success."
+      ],
+      "false_positives": [
+        "Vulnerability scanners, applications with long encoded query strings."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "tactic": "Initial Access",
+          "rationale": "Exploit-like request sent to an internal web service."
+        }
+      ],
+      "risk_score": 40.0,
+      "wireshark_filter": "ip.addr == 192.168.1.66 && ip.addr == 192.168.1.20 && tcp.port == 80 | ip.src == 192.168.1.66 && http.request",
+      "status": "New"
+    },
+    {
+      "alert_id": "EXFI-95280FC2",
+      "title": "Large outbound transfer to 198.51.100.25:8080",
+      "category": "Exfiltration",
+      "rule": "EXFIL-RATIO",
+      "severity": "Medium",
+      "confidence": "Low",
+      "src_ip": "192.168.1.77",
+      "dst_ip": "198.51.100.25",
+      "dst_port": 8080,
+      "protocol": "TCP",
+      "start_ts": 1760000900.1,
+      "end_ts": 1760000916.159794,
+      "evidence": [
+        "192.168.1.77 sent 2.91 MB (2003 packets) to 198.51.100.25:8080/TCP over 16.1s (~177 KB/s) across 1 flow(s); 54.15 KB came back.",
+        "Outbound-to-inbound ratio 53.7:1. Large-volume rule not met (>= 10.00 MB); ratio rule met (>= 10.0:1 and >= 1.00 MB).",
+        "Byte counts are frame sizes seen in the capture; encrypted content cannot be inspected, so the data type is unknown."
+      ],
+      "threshold": "bytes_out >= 10000000 OR (bytes_out >= 1000000 AND out/in >= 10.0)",
+      "investigation_steps": [
+        "Identify the process/user on the internal host responsible for the transfer (EDR, proxy logs).",
+        "Check whether the destination is an approved backup/cloud/file-sharing service.",
+        "Review what data was accessible to that host around that time (file-server and DLP logs).",
+        "If unapproved: block the destination, preserve evidence and start incident handling."
+      ],
+      "false_positives": [
+        "Backups, cloud sync (OneDrive/Dropbox), software uploads, video conferencing, crash-dump uploads.",
+        "Large legitimate file shares or mail attachments."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "tactic": "Exfiltration",
+          "rationale": "Unusually large outbound volume to one destination (could be legitimate)."
+        }
+      ],
+      "risk_score": 40.0,
+      "wireshark_filter": "ip.addr == 192.168.1.77 && ip.addr == 198.51.100.25 && tcp.port == 8080",
+      "status": "New"
+    },
+    {
+      "alert_id": "SCAN-95D4BCAA",
+      "title": "ICMP sweep-like activity from 192.168.1.66",
+      "category": "Scan",
+      "rule": "SCAN-ICMP-SWEEP",
+      "severity": "Low",
+      "confidence": "Medium",
+      "src_ip": "192.168.1.66",
+      "dst_ip": "multiple",
+      "dst_port": null,
+      "protocol": "ICMP",
+      "start_ts": 1760000610.889987,
+      "end_ts": 1760000611.761986,
+      "evidence": [
+        "192.168.1.66 sent ICMP to 30 distinct hosts; 10 replied.",
+        "ICMP type/code are not used to prove host discovery intent."
+      ],
+      "threshold": ">= 15 distinct ICMP destinations from one source",
+      "investigation_steps": [
+        "Determine whether 192.168.1.66 is an authorised scanner or asset-inventory host.",
+        "Review firewall/IDS logs for the same source in the surrounding hours.",
+        "If unauthorised, isolate the source and investigate how it was compromised (internal) or block it (external).",
+        "Check the targets for newly opened ports/services shown in the evidence."
+      ],
+      "false_positives": [
+        "Network monitoring (ping checks), traceroute, inventory tools."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [
+        {
+          "id": "T1018",
+          "name": "Remote System Discovery",
+          "tactic": "Discovery",
+          "rationale": "Internal source sent ICMP to many hosts (host discovery-like)."
+        }
+      ],
+      "risk_score": 25.0,
+      "wireshark_filter": "ip.src == 192.168.1.66 | ip.src == 192.168.1.66 && tcp.flags.syn == 1 && tcp.flags.ack == 0 | ip.dst == 192.168.1.66 && tcp.flags.reset == 1",
+      "status": "New"
+    },
+    {
+      "alert_id": "BEAC-0640C5C1",
+      "title": "Periodic connections to 203.0.113.123:123 (beacon-like timing)",
+      "category": "Beaconing",
+      "rule": "BEACON-PERIODIC",
+      "severity": "Informational",
+      "confidence": "Low",
+      "src_ip": "192.168.1.10",
+      "dst_ip": "203.0.113.123",
+      "dst_port": 123,
+      "protocol": "UDP",
+      "start_ts": 1760000005.0,
+      "end_ts": 1760000709.0,
+      "evidence": [
+        "12 UDP connections from 192.168.1.10 to 203.0.113.123:123 between 2025-10-09 08:53:25 UTC and 2025-10-09 09:05:09 UTC.",
+        "Interval mean 64.00s, median 64.00s, std 0.00s, CV 0.000; 100% of intervals within +/-20% of the median.",
+        "Mean bytes per connection: 90 B out / 90 B in (size CV out 0.00, in 0.00).",
+        "12 of 12 connections received a reply. First start times: 08:53:25, 08:54:29, 08:55:33, 08:56:37, 08:57:41.",
+        "Scoring signals (3): external destination=True, non-standard port=False, consistent sizes=True, >=20 connections=False, very regular (CV<0.1)=True.",
+        "Port 123 is on the benign-periodic list (e.g. NTP/DNS); severity capped at Informational."
+      ],
+      "threshold": ">= 8 connections; CV <= 0.25 or >= 80% of intervals within +/-20%",
+      "investigation_steps": [
+        "Identify the process on the source host that opens these connections (EDR, netstat/Sysmon event 3).",
+        "Check the destination IP/domain reputation and whether other hosts contact it.",
+        "Inspect jitter, payload sizes and any HTTP/TLS metadata (SNI, JA3) for the group.",
+        "If unexplained, isolate the host and collect memory/disk artefacts before remediation."
+      ],
+      "false_positives": [
+        "Software update checks, telemetry, heartbeat/keep-alive, monitoring agents, mail/chat polling, NTP.",
+        "Browser tabs or SaaS clients refreshing on a timer."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [],
+      "risk_score": 4.0,
+      "wireshark_filter": "ip.addr == 192.168.1.10 && ip.addr == 203.0.113.123 && udp.port == 123",
+      "status": "New"
+    },
+    {
+      "alert_id": "TLS-38D4DE99",
+      "title": "Repeated connections to uncommon destination 203.0.113.50",
+      "category": "TLS",
+      "rule": "TLS-UNCOMMON-REPEAT",
+      "severity": "Informational",
+      "confidence": "Low",
+      "src_ip": "192.168.1.50",
+      "dst_ip": "203.0.113.50",
+      "dst_port": 8443,
+      "protocol": "TCP",
+      "start_ts": 1760000021.368103,
+      "end_ts": 1760002118.700051,
+      "evidence": [
+        "36 web/TLS connections to c2-sim.example:8443; name is not on the built-in common-services list.",
+        "'Uncommon' only means 'not on a small allow-list'; most such destinations are legitimate."
+      ],
+      "threshold": ">= 10 connections to a destination not on the allow-list",
+      "investigation_steps": [
+        "Open the request/handshake in Wireshark using the suggested filter.",
+        "Confirm the client application and destination are expected.",
+        "Review proxy/web-server logs for response codes; the capture alone may not show success."
+      ],
+      "false_positives": [
+        "Any SaaS/API service not on the small built-in list."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [],
+      "risk_score": 4.0,
+      "wireshark_filter": "ip.addr == 192.168.1.50 && ip.addr == 203.0.113.50 && tcp.port == 8443 | ip.addr == 203.0.113.50 && tls.handshake.type == 1",
+      "status": "New"
+    },
+    {
+      "alert_id": "HTTP-48691562",
+      "title": "HTTP requests addressed to a raw IP address",
+      "category": "HTTP",
+      "rule": "HTTP-IPHOST",
+      "severity": "Informational",
+      "confidence": "Low",
+      "src_ip": "192.168.1.66",
+      "dst_ip": "192.168.1.20",
+      "dst_port": 80,
+      "protocol": "TCP",
+      "start_ts": 1760000614.839986,
+      "end_ts": 1760000616.339986,
+      "evidence": [
+        "4 requests used a bare IP as Host (192.168.1.20)."
+      ],
+      "threshold": "Host header is an IP literal",
+      "investigation_steps": [
+        "Open the request/handshake in Wireshark using the suggested filter.",
+        "Confirm the client application and destination are expected.",
+        "Review proxy/web-server logs for response codes; the capture alone may not show success."
+      ],
+      "false_positives": [
+        "Internal appliances, device web UIs, APIs."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [],
+      "risk_score": 4.0,
+      "wireshark_filter": "ip.addr == 192.168.1.66 && ip.addr == 192.168.1.20 && tcp.port == 80 | ip.src == 192.168.1.66 && http.request",
+      "status": "New"
+    },
+    {
+      "alert_id": "HTTP-866C862D",
+      "title": "Scripted or unusual HTTP client",
+      "category": "HTTP",
+      "rule": "HTTP-SCRIPT-UA",
+      "severity": "Informational",
+      "confidence": "Low",
+      "src_ip": "192.168.1.77",
+      "dst_ip": "198.51.100.25",
+      "dst_port": 8080,
+      "protocol": "TCP",
+      "start_ts": 1760000900.15,
+      "end_ts": 1760000900.15,
+      "evidence": [
+        "Client indicators: python-requests (1 request(s)) to files-sim.example."
+      ],
+      "threshold": "user-agent is a scripting library or absent",
+      "investigation_steps": [
+        "Open the request/handshake in Wireshark using the suggested filter.",
+        "Confirm the client application and destination are expected.",
+        "Review proxy/web-server logs for response codes; the capture alone may not show success."
+      ],
+      "false_positives": [
+        "Admin scripts, package managers, health checks, developer tools."
+      ],
+      "evidence_strength": "Heuristic",
+      "mitre": [],
+      "risk_score": 4.0,
+      "wireshark_filter": "ip.addr == 192.168.1.77 && ip.addr == 198.51.100.25 && tcp.port == 8080 | ip.src == 192.168.1.77 && http.request",
+      "status": "New"
+    }
+  ],
+  "ioc_list": [
+    {
+      "type": "ip",
+      "value": "198.51.100.25",
+      "count": 3005,
+      "related_alerts": "EXFI-FA168C3A, EXFI-95280FC2, HTTP-866C862D",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:08:20 UTC"
+    },
+    {
+      "type": "ip",
+      "value": "203.0.113.50",
+      "count": 432,
+      "related_alerts": "BEAC-2A1F9380, TLS-38D4DE99",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 08:53:41 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "tunnel-sim.example",
+      "count": 300,
+      "related_alerts": "DNS-E5C04AD3",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:13:20 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "c2-sim.example",
+      "count": 36,
+      "related_alerts": "TLS-38D4DE99",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 08:53:41 UTC"
+    },
+    {
+      "type": "ip",
+      "value": "203.0.113.123",
+      "count": 24,
+      "related_alerts": "BEAC-0640C5C1",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 08:53:25 UTC"
+    },
+    {
+      "type": "user_agent",
+      "value": "Nikto/2.1.6 (SIMULATED)",
+      "count": 4,
+      "related_alerts": "HTTP-A6F73B4E",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:03:34 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "files-sim.example",
+      "count": 2,
+      "related_alerts": "EXFI-FA168C3A, HTTP-866C862D",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:08:20 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "abfjigxfdnhtv.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:17 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "bcngfwpqxdidmsh.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:33 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "dmefnmggtxdgo.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:17 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "gmzkqklstjol.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:26 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "lkcihjcvmnbvdvp.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:22 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "mkrrcnedpnpttd.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:31 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "rrigiuktssld.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:23 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "svqtxzdvadsrelsr.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:25 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "wfnngbthrjluc.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:28 UTC"
+    },
+    {
+      "type": "domain",
+      "value": "wnzdfusqpwwk.example",
+      "count": 1,
+      "related_alerts": "DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:15:21 UTC"
+    },
+    {
+      "type": "user_agent",
+      "value": "python-requests/2.31 (SIMULATED)",
+      "count": 1,
+      "related_alerts": "HTTP-866C862D",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": "2025-10-09 09:08:20 UTC"
+    },
+    {
+      "type": "internal_host",
+      "value": "192.168.1.50",
+      "count": 0,
+      "related_alerts": "BEAC-2A1F9380",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": ""
+    },
+    {
+      "type": "internal_host",
+      "value": "192.168.1.66",
+      "count": 0,
+      "related_alerts": "SCAN-645FE0B1, SCAN-67539DBB, REMO-13AA9CE3, SCAN-95D4BCAA",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": ""
+    },
+    {
+      "type": "internal_host",
+      "value": "192.168.1.88",
+      "count": 0,
+      "related_alerts": "DNS-E5C04AD3, DNS-6F909C22",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": ""
+    },
+    {
+      "type": "internal_host",
+      "value": "192.168.1.77",
+      "count": 0,
+      "related_alerts": "EXFI-FA168C3A, EXFI-95280FC2",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": ""
+    },
+    {
+      "type": "internal_host",
+      "value": "192.168.1.10",
+      "count": 0,
+      "related_alerts": "BEAC-0640C5C1",
+      "suspicious": true,
+      "note": "Referenced by an alert - validate before blocking",
+      "first_seen_utc": ""
+    }
+  ],
+  "mitre_mapping": [
+    {
+      "id": "T1595.002",
+      "name": "Active Scanning: Vulnerability Scanning",
+      "tactic": "Reconnaissance",
+      "rationale": "User-agent of a known scanning tool.",
+      "alert_ids": [
+        "HTTP-A6F73B4E"
+      ],
+      "confidence": "Medium",
+      "evidence": [
+        "User-Agent contains: nikto (4 request(s)).",
+        "Example: Nikto/2.1.6 (SIMULATED)"
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1595/002/"
+    },
+    {
+      "id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "rationale": "Exploit-like request sent to an internal web service.",
+      "alert_ids": [
+        "HTTP-01041F97"
+      ],
+      "confidence": "Low",
+      "evidence": [
+        "Request to 192.168.1.20: GET /index.php?cmd=id",
+        "Matched: command-like parameter."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1190/"
+    },
+    {
+      "id": "T1018",
+      "name": "Remote System Discovery",
+      "tactic": "Discovery",
+      "rationale": "Internal source sent ICMP to many hosts (host discovery-like).",
+      "alert_ids": [
+        "SCAN-95D4BCAA"
+      ],
+      "confidence": "Medium",
+      "evidence": [
+        "192.168.1.66 sent ICMP to 30 distinct hosts; 10 replied.",
+        "ICMP type/code are not used to prove host discovery intent."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1018/"
+    },
+    {
+      "id": "T1046",
+      "name": "Network Service Discovery",
+      "tactic": "Discovery",
+      "rationale": "Many ports/services probed on a host from an internal source.",
+      "alert_ids": [
+        "SCAN-645FE0B1",
+        "SCAN-67539DBB"
+      ],
+      "confidence": "High",
+      "evidence": [
+        "208 distinct destination ports on 192.168.1.20; 214 SYN probe flows in 16.4s (~13 probes/s).",
+        "95% of probes got no answer or a reset (threshold 60%)."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1046/"
+    },
+    {
+      "id": "T1021.002",
+      "name": "Remote Services: SMB/Windows Admin Shares",
+      "tactic": "Lateral Movement",
+      "rationale": "One source connecting to SMB on many hosts.",
+      "alert_ids": [
+        "REMO-13AA9CE3"
+      ],
+      "confidence": "Medium",
+      "evidence": [
+        "192.168.1.66 contacted 42 distinct hosts on TCP/445 (SMB).",
+        "1 host(s) completed the TCP handshake; this does NOT show a successful login."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1021/002/"
+    },
+    {
+      "id": "T1071.001",
+      "name": "Application Layer Protocol: Web Protocols",
+      "tactic": "Command and Control",
+      "rationale": "Regular periodic connections are consistent with C2 check-ins; payload not inspected, so protocol use is unconfirmed.",
+      "alert_ids": [
+        "BEAC-2A1F9380"
+      ],
+      "confidence": "High",
+      "evidence": [
+        "36 TCP connections from 192.168.1.50 to 203.0.113.50:8443 between 2025-10-09 08:53:41 UTC and 2025-10-09 09:28:38 UTC.",
+        "Interval mean 59.92s, median 59.96s, std 1.30s, CV 0.022; 100% of intervals within +/-20% of the median."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1071/001/"
+    },
+    {
+      "id": "T1071.004",
+      "name": "Application Layer Protocol: DNS",
+      "tactic": "Command and Control",
+      "rationale": "Many high-entropy, long DNS names under one domain.",
+      "alert_ids": [
+        "DNS-E5C04AD3"
+      ],
+      "confidence": "High",
+      "evidence": [
+        "300 queries from 192.168.1.88 for names under tunnel-sim.example (1760001200-1760001317 epoch).",
+        "300 unique subdomains; average subdomain length 45.0; 300 high-entropy names; 300 unusually long names; 100% TXT/NULL/ANY queries; peak 152 queries/min."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1071/004/"
+    },
+    {
+      "id": "T1568.002",
+      "name": "Dynamic Resolution: Domain Generation Algorithms",
+      "tactic": "Command and Control",
+      "rationale": "Many random-looking domain names queried by one source.",
+      "alert_ids": [
+        "DNS-6F909C22"
+      ],
+      "confidence": "High",
+      "evidence": [
+        "192.168.1.88 queried 38 distinct domains whose second-level labels look random (entropy >= 3.0, vowel ratio <= 0.3).",
+        "38 of 38 matching responses were NXDOMAIN."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1568/002/"
+    },
+    {
+      "id": "T1571",
+      "name": "Non-Standard Port",
+      "tactic": "Command and Control",
+      "rationale": "Periodic traffic on a port outside the common-service list.",
+      "alert_ids": [
+        "BEAC-2A1F9380"
+      ],
+      "confidence": "High",
+      "evidence": [
+        "36 TCP connections from 192.168.1.50 to 203.0.113.50:8443 between 2025-10-09 08:53:41 UTC and 2025-10-09 09:28:38 UTC.",
+        "Interval mean 59.92s, median 59.96s, std 1.30s, CV 0.022; 100% of intervals within +/-20% of the median."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1571/"
+    },
+    {
+      "id": "T1572",
+      "name": "Protocol Tunneling",
+      "tactic": "Command and Control",
+      "rationale": "Pattern consistent with data encoded into DNS names.",
+      "alert_ids": [
+        "DNS-E5C04AD3"
+      ],
+      "confidence": "High",
+      "evidence": [
+        "300 queries from 192.168.1.88 for names under tunnel-sim.example (1760001200-1760001317 epoch).",
+        "300 unique subdomains; average subdomain length 45.0; 300 high-entropy names; 300 unusually long names; 100% TXT/NULL/ANY queries; peak 152 queries/min."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1572/"
+    },
+    {
+      "id": "T1048",
+      "name": "Exfiltration Over Alternative Protocol",
+      "tactic": "Exfiltration",
+      "rationale": "Unusually large outbound volume to one destination (could be legitimate).",
+      "alert_ids": [
+        "EXFI-95280FC2"
+      ],
+      "confidence": "Low",
+      "evidence": [
+        "192.168.1.77 sent 2.91 MB (2003 packets) to 198.51.100.25:8080/TCP over 16.1s (~177 KB/s) across 1 flow(s); 54.15 KB came back.",
+        "Outbound-to-inbound ratio 53.7:1. Large-volume rule not met (>= 10.00 MB); ratio rule met (>= 10.0:1 and >= 1.00 MB)."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1048/"
+    },
+    {
+      "id": "T1048.003",
+      "name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+      "tactic": "Exfiltration",
+      "rationale": "Large cleartext HTTP upload.",
+      "alert_ids": [
+        "EXFI-FA168C3A"
+      ],
+      "confidence": "Medium",
+      "evidence": [
+        "1 cleartext HTTP request(s) declared Content-Length up to 2.80 MB (host: files-sim.example, path: /upload).",
+        "Content-Length is what the client declared; the body itself is not stored or analysed."
+      ],
+      "status": "Candidate - requires analyst validation",
+      "url": "https://attack.mitre.org/techniques/T1048/003/"
+    }
+  ],
+  "evidence_and_limitations": [
+    "Findings are heuristic indicators computed from packet metadata; they are not confirmed malicious activity.",
+    "Much of the traffic is encrypted (TLS); payloads, URLs and file contents cannot be inspected. Only metadata (SNI, JA3, sizes, timing) is available.",
+    "Capture position matters: traffic that did not cross the capture point is invisible, and NAT can hide the real source host.",
+    "Scan, brute-force and lateral-movement rules show connection patterns only; they do not show authentication success or file contents."
+  ],
+  "false_positive_considerations": [
+    "Admin scripts, package managers, health checks, developer tools.",
+    "Admin/inventory/backup tools legitimately contact many hosts.",
+    "Another tool reusing the string.",
+    "Any SaaS/API service not on the small built-in list.",
+    "Authorised vulnerability scanner or asset discovery.",
+    "Authorised vulnerability scans.",
+    "Backups, cloud sync (OneDrive/Dropbox), software uploads, video conferencing, crash-dump uploads.",
+    "Browser tabs or SaaS clients refreshing on a timer.",
+    "Browser/OS connectivity probes generate a few random names (Chromium), usually fewer than the threshold.",
+    "CDN, antivirus or telemetry services that encode identifiers in hostnames.",
+    "DNS-based blocklists / reputation lookups (e.g. mail filters).",
+    "Internal appliances, device web UIs, APIs.",
+    "Internet background scanning (if the source is external).",
+    "Large legitimate file shares or mail attachments.",
+    "Legitimate web-form/file uploads.",
+    "Network monitoring (ping checks), traceroute, inventory tools.",
+    "Security scanners or sandbox detonation.",
+    "Software update checks, telemetry, heartbeat/keep-alive, monitoring agents, mail/chat polling, NTP.",
+    "Vulnerability scanners, applications with long encoded query strings.",
+    "Vulnerability scanners.",
+    "Wildcard DNS test tools."
+  ],
+  "recommended_containment_and_remediation": [
+    "[Beaconing] Isolate the source host from the network pending triage.",
+    "[Beaconing] Block the destination IP/domain at the firewall/proxy after validation.",
+    "[Beaconing] Collect process, memory and persistence artefacts with EDR; identify the program making the connections.",
+    "[DNS] Block or sinkhole the suspicious domain(s) at the resolver.",
+    "[DNS] Restrict outbound DNS to approved resolvers and enable DNS logging.",
+    "[DNS] Alert on long/high-entropy query patterns and high NXDOMAIN rates.",
+    "[Exfiltration] Determine what data the host could access and whether it left the network (DLP, proxy, cloud logs).",
+    "[Exfiltration] Block the destination if unapproved and preserve evidence.",
+    "[Exfiltration] Enforce egress filtering and upload-size alerting.",
+    "[HTTP] Review web-server logs for the matching requests and responses.",
+    "[HTTP] Patch/harden the targeted web application and enable a WAF where appropriate.",
+    "[Remote Services] Restrict SMB/RDP/SSH to management networks or VPN.",
+    "[Remote Services] Enforce MFA and account lockout; review authentication logs.",
+    "[Scan] Confirm whether the scanner is authorised; if not, isolate the source and review how it was compromised.",
+    "[Scan] Review exposed services on the targeted hosts and close what is not needed.",
+    "[Scan] Add IDS rules/rate limits for SYN scans and sweeps.",
+    "[TLS] Review the destination/SNI with threat intelligence; consider TLS inspection policy where lawful."
+  ],
+  "analyst_conclusion": "EXAMPLE ONLY (simulated data): the indicators above match the simulated scenarios injected by sample_data/generate_samples.py: a ~60-second beacon to 203.0.113.50:8443, a scan from 192.168.1.66, DNS tunnel/DGA-like queries from 192.168.1.88 and a ~2.8 MB upload from 192.168.1.77. In a real case the analyst would validate each finding with endpoint and log evidence before concluding.",
+  "host_risk": [
+    {
+      "host": "192.168.1.66",
+      "scope": "internal",
+      "alerts": 7,
+      "categories": "HTTP, Remote Services, Scan",
+      "risk_score": 100.0,
+      "risk_level": "Critical",
+      "top_alert": "Port scan-like activity: 192.168.1.66 -> 192.168.1.20"
+    },
+    {
+      "host": "192.168.1.50",
+      "scope": "internal",
+      "alerts": 2,
+      "categories": "Beaconing, TLS",
+      "risk_score": 83.1,
+      "risk_level": "High",
+      "top_alert": "Periodic connections to 203.0.113.50:8443 (beacon-like timing)"
+    },
+    {
+      "host": "192.168.1.88",
+      "scope": "internal",
+      "alerts": 2,
+      "categories": "DNS",
+      "risk_score": 82.5,
+      "risk_level": "High",
+      "top_alert": "Possible DNS tunneling to tunnel-sim.example"
+    },
+    {
+      "host": "192.168.1.77",
+      "scope": "internal",
+      "alerts": 3,
+      "categories": "Exfiltration, HTTP",
+      "risk_score": 50.6,
+      "risk_level": "Medium",
+      "top_alert": "Large HTTP POST upload to files-sim.example"
+    },
+    {
+      "host": "192.168.1.10",
+      "scope": "internal",
+      "alerts": 1,
+      "categories": "Beaconing",
+      "risk_score": 4.0,
+      "risk_level": "Informational",
+      "top_alert": "Periodic connections to 203.0.113.123:123 (beacon-like timing)"
+    }
+  ],
+  "thresholds": {
+    "dns_long_name_len": 52,
+    "dns_long_label_len": 40,
+    "dns_entropy_min": 3.5,
+    "dns_entropy_min_len": 16,
+    "dns_min_hits": 5,
+    "dns_high_freq_per_min": 100,
+    "dns_nxdomain_min_responses": 20,
+    "dns_nxdomain_ratio": 0.5,
+    "dns_tunnel_min_unique_subdomains": 30,
+    "dns_tunnel_avg_label_len": 20,
+    "dns_tunnel_min_score": 3,
+    "dns_dga_min_domains": 10,
+    "dns_dga_max_vowel_ratio": 0.3,
+    "dns_dga_min_entropy": 3.0,
+    "beacon_min_connections": 8,
+    "beacon_max_cv": 0.25,
+    "beacon_min_interval_sec": 1.0,
+    "beacon_max_interval_sec": 7200.0,
+    "beacon_tolerance": 0.2,
+    "beacon_tolerance_fraction": 0.8,
+    "beacon_benign_ports": [
+      53,
+      67,
+      68,
+      123,
+      137,
+      138,
+      1900,
+      5353
+    ],
+    "scan_min_ports": 20,
+    "scan_min_hosts": 15,
+    "scan_failed_ratio": 0.6,
+    "scan_min_flows": 20,
+    "scan_service_enum_ports": 8,
+    "scan_icmp_sweep_hosts": 15,
+    "remote_repeat_conns": 10,
+    "remote_sweep_hosts": 5,
+    "exfil_large_bytes": 10000000,
+    "exfil_ratio_min_bytes": 1000000,
+    "exfil_ratio": 10.0,
+    "exfil_http_post_bytes": 1000000,
+    "dns_exfil_bytes": 20000,
+    "http_repeat_min": 10,
+    "http_long_path_len": 200,
+    "max_alerts_per_rule": 50
+  },
+  "ai_sections": {}
+}

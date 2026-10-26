@@ -1,0 +1,7 @@
+# Runtime dependencies (tested with Python 3.11 and 3.12)
+scapy>=2.5,<3
+pandas>=2.0,<3
+numpy>=1.26,<3
+plotly>=5.18,<7
+streamlit>=1.49,<1.50
+reportlab>=4.0,<5

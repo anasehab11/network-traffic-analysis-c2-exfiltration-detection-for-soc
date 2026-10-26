@@ -1,0 +1,6 @@
+# Analyst-supplied indicators, one per line (IPs, domains, JA3 hashes). Lines starting with # are ignored.
+# This file ships EMPTY: no threat intelligence is bundled. Add indicators from sources you trust.
+# Any exact match in a capture raises a "Watchlist match" alert (High, evidence strength: Corroborated).
+# Example (commented out):
+# 203.0.113.99
+# bad-domain.example

@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+database/*.db
+config/settings.json
+reports/*
+!reports/.gitkeep
+*.log
+.streamlit/secrets.toml
+# Never commit real captures
+*.pcap
+*.pcapng
+*.cap
+!sample_data/*_sim.pcap
+!sample_data/*_sim.pcapng
